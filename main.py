@@ -4,7 +4,7 @@ from tkinter import ttk
 
 def new_game():
     global secret_number, remaining_guesses
-    secret_number = None
+    secret_number = 55
     remaining_guesses = 10
     entry_secret_number.config(state="normal")
     entry_player_guess.config(state="normal")
@@ -64,9 +64,9 @@ window.title("Guess the Number Game")
 title_font = ("Helvetica", 24, "bold")
 label_font = ("Arial", 16)
 button_font = ("Arial", 14)
-bg_color = "#F5F5F5"  
-button_color = "#4CAF50"  
-text_color = "#333333"  
+bg_color = "#F5F5F5"
+button_color = "#4CAF50"
+text_color = "#333333"
 
 window.configure(bg=bg_color)
 
