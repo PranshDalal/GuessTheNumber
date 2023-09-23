@@ -1,32 +1,73 @@
 import tkinter as tk
 from tkinter import ttk
+import random
 
 
 def new_game():
-    global secret_number, remaining_guesses
-    secret_number = 55
+    global secret_number, remaining_guesses, is_single_player
+    secret_number = None
     remaining_guesses = 10
+    is_single_player = False
     entry_secret_number.config(state="normal")
-    entry_player_guess.config(state="normal")
     entry_secret_number.delete(0, tk.END)
     entry_player_guess.delete(0, tk.END)
     label_result.config(text="")
     label_turn.config(
-        text="Player 1, save your secret number:", foreground="black")
-    label_title.config(foreground="blue")
-    label_title.after(1000, lambda: label_title.config(foreground="blue"))
+        text="Player 1, enter your secret number (1-100):", foreground="black")
+    label_instruction1.config(
+        text="Player 1, enter your secret number (1-100):")
+    button_save.config(text="Save")
+    label_instruction2.grid(row=3, column=0, columnspan=2)
+    entry_secret_number.delete(0, tk.END)
+    entry_player_guess.delete(0, tk.END)
+    entry_secret_number.config(state="normal")
+    entry_secret_number.delete(0, tk.END)
+    entry_player_guess.config(state="normal")
+    button_save.config(state="normal")
+    button_guess.config(state="normal")
+    label_instruction2.grid(row=3, column=0, columnspan=2)
 
 
 def save_secret_number():
-    global secret_number
-    try:
-        secret_number = int(entry_secret_number.get())
+    global secret_number, is_single_player
+    if is_single_player:
+        num_digits = int(entry_secret_number.get())
+        secret_number = random.randint(
+            10 ** (num_digits - 1), 10 ** num_digits - 1)
+        is_single_player = False  # Automatically switch to player 2's turn
         entry_secret_number.config(state="disabled")
         label_turn.config(
-            text="Player 2's Turn (10 guesses remaining)", foreground="black")
-    except ValueError:
-        label_turn.config(
-            text="Please enter a valid number as your secret number", foreground="red")
+            text="Try to guess the secret number", foreground="black")
+    else:
+        try:
+            secret_number = int(entry_secret_number.get())
+            entry_secret_number.config(state="disabled")
+            label_turn.config(
+                text="Player 2's Turn (10 guesses remaining)", foreground="black")
+        except ValueError:
+            label_turn.config(
+                text="Please enter a valid number as your secret number", foreground="red")
+
+
+def switch_to_single_player_mode():
+    global is_single_player
+    is_single_player = True
+    label_instruction1.config(
+        text="Enter the number of digits for the secret number:")
+    button_save.config(text="Generate Secret Number")
+    label_instruction2.grid_remove()
+    label_turn.config(text="You have 10 guesses remaining", foreground="black")
+
+
+def switch_to_two_player_mode():
+    global is_single_player
+    is_single_player = False
+    label_instruction1.config(
+        text="Player 1, enter your secret number (1-100):")
+    button_save.config(text="Save")
+    label_instruction2.grid(row=3, column=0, columnspan=2)
+    label_turn.config(
+        text="Player 1's Turn (Enter your secret number)", foreground="black")
 
 
 def check_guess():
@@ -41,21 +82,21 @@ def check_guess():
 
     if guess == secret_number:
         label_result.config(
-            text=f"Player 2 wins! The number was {secret_number}", foreground="green")
+            text=f"The number was {secret_number}", foreground="green")
         entry_player_guess.config(state="disabled")
         label_turn.config(foreground="green")
     elif remaining_guesses == 0:
         label_result.config(
-            text=f"Player 2 ran out of guesses. The number was {secret_number}", foreground="red")
+            text=f"Ran out of guesses. The number was {secret_number}", foreground="red")
         entry_player_guess.config(state="disabled")
         label_turn.config(foreground="red")
     elif guess < secret_number:
         label_result.config(
-            text=f"Player 2's guess is too low ({remaining_guesses} guesses remaining)", foreground="red")
+            text=f"Guess is too low ({remaining_guesses} guesses remaining)", foreground="red")
         entry_player_guess.delete(0, tk.END)
     else:
         label_result.config(
-            text=f"Player 2's guess is too high ({remaining_guesses} guesses remaining)", foreground="red")
+            text=f"Guess is too high ({remaining_guesses} guesses remaining)", foreground="red")
 
 
 window = tk.Tk()
@@ -90,6 +131,16 @@ label_result = ttk.Label(window, text="", font=label_font)
 label_turn = ttk.Label(window, text="", font=label_font)
 button_new_game = ttk.Button(
     window, text="New Game", command=new_game, style='TButton')
+
+menu = tk.Menu(window)
+window.config(menu=menu)
+game_menu = tk.Menu(menu)
+menu.add_cascade(label="Menu", menu=game_menu)
+game_menu.add_command(label="1 Player Mode",
+                      command=switch_to_single_player_mode)
+game_menu.add_command(label="2 Player Mode", command=switch_to_two_player_mode)
+game_menu.add_separator()
+game_menu.add_command(label="Exit", command=window.quit)
 
 label_instruction1.grid(row=1, column=0, columnspan=2)
 entry_secret_number.grid(row=2, column=0, padx=10, pady=5)
